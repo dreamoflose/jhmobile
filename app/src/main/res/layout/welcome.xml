@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:background="#fff"
+        tools:context=".MainActivity">
+    <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_centerInParent="true">
+        <RelativeLayout android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal">
+            <ImageView android:id="@+id/jay_studio_icon"
+                       android:layout_width="170dip"
+                       android:layout_height="170dip"
+                       android:src="@drawable/ico"/>
+        </RelativeLayout>
+        <LinearLayout android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_gravity="center_horizontal">
+            <TextView android:id="@+id/app_name"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:padding="6dip"
+                      android:text="@string/app_name"
+                      android:textSize="24sp"/>
+            <TextView android:id="@+id/version"
+                      android:layout_width="wrap_content"
+                      android:layout_height="fill_parent"
+                      android:gravity="bottom"
+                      android:paddingBottom="6dip"
+                      android:text="@string/version"
+                      android:textSize="14sp"/>
+        </LinearLayout>
+        <View android:layout_width="fill_parent"
+              android:layout_height="1px"
+              android:layout_marginLeft="20dip"
+              android:layout_marginRight="20dip"
+              android:background="#dddddd"/>
+        <TextView android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_gravity="center_horizontal"
+                  android:padding="6dip"
+                  android:text="建立企业自己的互联网销售平台"
+                  android:textSize="13sp"/>
+    </LinearLayout>
+    <TextView android:id="@+id/copy_right"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:padding="12dip"
+              android:layout_centerHorizontal="true"
+              android:layout_alignParentBottom="true"
+              android:text="© 浙江机汇网络科技有限公司"
+              android:textSize="11sp"/>
+</RelativeLayout>
