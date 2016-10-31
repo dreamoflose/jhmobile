@@ -42,7 +42,6 @@ public class WelcomeActivity extends Activity implements  Runnable{
             if (!isFirstUse) {
                 startActivity(new Intent(this, MainActivity.class));//跳转到主页
             }
-            finish();
 
             //实例化Editor对象
             SharedPreferences.Editor editor = preferences.edit();
