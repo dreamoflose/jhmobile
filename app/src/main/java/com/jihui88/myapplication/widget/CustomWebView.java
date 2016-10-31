@@ -1,18 +1,21 @@
 package com.jihui88.myapplication.widget;
+
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.view.View;
 import android.view.View.OnLongClickListener;
-import android.webkit.WebSettings;
+import android.webkit.*;
 import android.webkit.WebSettings.RenderPriority;
 import android.webkit.WebSettings.ZoomDensity;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
+import com.jihui88.myapplication.R;
+
 /**
  * 自定义WebView，长按图片获取图片url
  * @author LinZhang
  *
  */
+@SuppressLint("SetJavaScriptEnabled")
 public class CustomWebView extends WebView implements OnLongClickListener{
 	private Context context;
 	private LongClickCallBack mCallBack;
@@ -20,11 +23,13 @@ public class CustomWebView extends WebView implements OnLongClickListener{
 		super(context);
 		this.context = context;
 		this.mCallBack = mCallBack;
+        this.findViewById(R.id.webview);
 		initSettings();
 	}
 
 	private void initSettings() {
 		// 初始化设置
+        //WebView mWebView = (WebView) findViewById(R.id.webview);
 		WebSettings mSettings = this.getSettings();
 		mSettings.setJavaScriptEnabled(true);//开启javascript
 		mSettings.setDomStorageEnabled(true);//开启DOM
@@ -37,11 +42,10 @@ public class CustomWebView extends WebView implements OnLongClickListener{
 		mSettings.setLoadWithOverviewMode(true);// 调整到适合webview大小
 		mSettings.setDefaultZoom(ZoomDensity.FAR);// 屏幕自适应网页,如果没有这个，在低分辨率的手机上显示可能会异常
 		mSettings.setRenderPriority(RenderPriority.HIGH);
-		//提高网页加载速度，暂时阻塞图片加载，然后网页加载好了，在进行加载图片
-		mSettings.setBlockNetworkImage(true);
+		//mSettings.setBlockNetworkImage(true);//提高网页加载速度，暂时阻塞图片加载，然后网页加载好了，在进行加载图片
 		mSettings.setAppCacheEnabled(true);//开启缓存机制
 
-		setWebViewClient(new MyWebViewClient());
+		setWebViewClient(new MyWebViewClient());//处理简单的内容渲染
 		setOnLongClickListener(this);
 	}
 
@@ -55,17 +59,9 @@ public class CustomWebView extends WebView implements OnLongClickListener{
 		return false;
 	}
 
+
+
 	private class MyWebViewClient extends WebViewClient {
-		/**
-		 * 加载过程中 拦截加载的地址url
-		 * @param view
-		 * @param url  被拦截的url
-		 * @return
-		 */
-		@Override
-		public boolean shouldOverrideUrlLoading(WebView view, String url) {
-			return super.shouldOverrideUrlLoading(view, url);
-		}
 		/**
 		 * 页面加载过程中，加载资源回调的方法
 		 * @param view
@@ -99,8 +95,7 @@ public class CustomWebView extends WebView implements OnLongClickListener{
 		}
 
 		@Override
-		public void onReceivedError(WebView view, int errorCode,
-									String description, String failingUrl) {
+		public void onReceivedError(WebView view, int errorCode,String description, String failingUrl) {
 			super.onReceivedError(view, errorCode, description, failingUrl);
 		}
 
@@ -112,6 +107,8 @@ public class CustomWebView extends WebView implements OnLongClickListener{
 		}
 
 	}
+
+
 
 	/**
 	 * 长按事件回调接口，传递图片地址
