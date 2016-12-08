@@ -3,9 +3,8 @@ package com.jihui88.myapplication;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Context;
-import android.content.Intent;
+import android.content.*;
+import android.content.ClipboardManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -30,7 +29,10 @@ import com.google.zxing.Result;
 import com.jihui88.myapplication.widget.CustomDialog;
 import com.jihui88.myapplication.widget.CustomWebView;
 import com.jihui88.myapplication.widget.CustomWebView.LongClickCallBack;
+import com.jihui88.myapplication.wxapi.WXShareActivity;
 import com.jihui88.myapplication.zxing.DecodeImage;
+import com.tencent.mm.sdk.openapi.IWXAPI;
+import com.tencent.mm.sdk.openapi.WXAPIFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -42,7 +44,7 @@ import java.net.URL;
 
 
 @SuppressLint("SetJavaScriptEnabled")
-public class MainActivity extends Activity implements LongClickCallBack{
+public class MainActivity extends Activity implements LongClickCallBack {
     private CustomWebView mCustomWebView;
     private CustomDialog mCustomDialog;
     private ArrayAdapter<String> adapter;
@@ -51,11 +53,17 @@ public class MainActivity extends Activity implements LongClickCallBack{
     private String url;
     private File file;
 
+    //微信设置
+    private static final String APP_ID = "wxd939360915065e46";
+    private IWXAPI api;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initWebView();
+        regToWx();
     }
 
     private void initWebView() {
@@ -99,6 +107,7 @@ public class MainActivity extends Activity implements LongClickCallBack{
                 b.create().show();
                 return true;
             }
+
             //设置响应js 的Confirm()函数
             @Override
             public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) {
@@ -124,17 +133,21 @@ public class MainActivity extends Activity implements LongClickCallBack{
         mCustomWebView.loadUrl("http://m1.jihui88.com/");// 设置域名
         mCustomWebView.setFocusable(true);
         mCustomWebView.setFocusableInTouchMode(true);
-        LayoutParams lp= new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT);
+        LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         addContentView(mCustomWebView, lp);
     }
 
-
+    private void regToWx(){
+        api = WXAPIFactory.createWXAPI(this,APP_ID,true);
+        api.registerApp(APP_ID);
+    }
 
     // 连续点击两次Back键退出程序
     long startTime = 0;
+
     @Override
     public void onBackPressed() {
-        if(mCustomWebView.canGoBack()) {//canGoBack来判断是否能回退网页
+        if (mCustomWebView.canGoBack()) {//canGoBack来判断是否能回退网页
             mCustomWebView.goBack();
         } else {
             long currentTime = System.currentTimeMillis();
@@ -150,9 +163,9 @@ public class MainActivity extends Activity implements LongClickCallBack{
 
     @Override
     public void onLongClickCallBack(final String imgUrl) {
-        url=imgUrl;
+        url = imgUrl;
         // 获取到图片地址后做相应的处理
-        MyAsyncTask	mTask = new MyAsyncTask();
+        MyAsyncTask mTask = new MyAsyncTask();
         mTask.execute(imgUrl);
         showDialog();
     }
@@ -162,23 +175,22 @@ public class MainActivity extends Activity implements LongClickCallBack{
      * param url 图片地址
      * return
      */
-    private boolean decodeImage(String sUrl){
+    private boolean decodeImage(String sUrl) {
         result = DecodeImage.handleQRCodeFormBitmap(getBitmap(sUrl));
-        if(result == null){
+        if (result == null) {
             isQR = false;
-        }else {
+        } else {
             isQR = true;
         }
         return isQR;
     }
 
 
-
-    public class MyAsyncTask extends AsyncTask<String, Void, String>{
+    public class MyAsyncTask extends AsyncTask<String, Void, String> {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            if (isQR){
+            if (isQR) {
                 handler.sendEmptyMessage(0);
             }
         }
@@ -189,22 +201,24 @@ public class MainActivity extends Activity implements LongClickCallBack{
             return null;
         }
     }
+
     /**
      * 根据地址获取网络图片
+     *
      * @param sUrl 图片地址
      * @return
      * @throws IOException
      */
-    public  Bitmap getBitmap(String sUrl){
+    public Bitmap getBitmap(String sUrl) {
         try {
             URL url = new URL(sUrl);
-            HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setConnectTimeout(5000);
             conn.setRequestMethod("GET");
-            if(conn.getResponseCode() == 200){
+            if (conn.getResponseCode() == 200) {
                 InputStream inputStream = conn.getInputStream();
                 Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                saveMyBitmap(bitmap,"code");//先把bitmap生成jpg图片
+                saveMyBitmap(bitmap, "code");//先把bitmap生成jpg图片
                 return bitmap;
             }
         } catch (Exception e) {
@@ -217,7 +231,7 @@ public class MainActivity extends Activity implements LongClickCallBack{
      * 显示Dialog
      * param v
      */
-    private void  showDialog() {
+    private void showDialog() {
         initAdapter();
         mCustomDialog = new CustomDialog(this) {
             @Override
@@ -240,7 +254,7 @@ public class MainActivity extends Activity implements LongClickCallBack{
                                 closeDialog();
                                 break;
                             case 2:
-                                Toast.makeText(MainActivity.this, "已收藏", Toast.LENGTH_LONG).show();
+                                copyWebsite();
                                 closeDialog();
                                 break;
                             case 3:
@@ -262,31 +276,37 @@ public class MainActivity extends Activity implements LongClickCallBack{
         adapter = new ArrayAdapter<String>(this, R.layout.item_dialog);
         adapter.add("发送给朋友");
         adapter.add("保存到手机");
-        adapter.add("收藏");
+        adapter.add("复制地址");
     }
 
     /**
      * 是二维码时，才添加为识别二维码
      */
     @SuppressLint("HandlerLeak")
-    private Handler handler = new Handler(){
+    private Handler handler = new Handler() {
         public void handleMessage(Message msg) {
-            if (msg.what == 0){
-                if (isQR){
+            if (msg.what == 0) {
+                if (isQR) {
                     adapter.add("识别图中二维码");
                 }
                 adapter.notifyDataSetChanged();
             }
-        };
+        }
+
+        ;
     };
 
     /**
      * 发送给好友
      */
     private void sendToFriends() {
-        Intent intent=new Intent(Intent.ACTION_SEND);
-        Uri imageUri=  Uri.parse(file.getAbsolutePath());
+
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        Uri imageUri = Uri.parse(file.getAbsolutePath());
         intent.setType("image/*");
+        if (isQR) {//二维码地址
+            intent.putExtra(Intent.EXTRA_TEXT, result.toString().trim());
+        }
         intent.putExtra(Intent.EXTRA_STREAM, imageUri);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(Intent.createChooser(intent, getTitle()));
@@ -294,11 +314,19 @@ public class MainActivity extends Activity implements LongClickCallBack{
 
     /**
      * bitmap 保存为jpg 图片
+     *
      * @param mBitmap 图片源
-     * @param bitName  图片名
+     * @param bitName 图片名
      */
-    public void saveMyBitmap(Bitmap mBitmap,String bitName)  {
-        file= new File( Environment.getExternalStorageDirectory()+"/"+bitName + ".jpg");
+    public void saveMyBitmap(Bitmap mBitmap, String bitName) {
+        //file= new File( Environment.getExternalStorageDirectory()+"/"+bitName + ".jpg");
+        File appDir = new File(Environment.getExternalStorageDirectory(), "机汇网");
+        if (!appDir.exists()) {
+            appDir.mkdir();
+        }
+        String fileName = System.currentTimeMillis() + ".jpg";
+        file = new File(appDir, fileName);
+
         FileOutputStream fOut = null;
         try {
             fOut = new FileOutputStream(file);
@@ -317,23 +345,39 @@ public class MainActivity extends Activity implements LongClickCallBack{
             e.printStackTrace();
         }
     }
+
     /**
      * 先保存到本地再广播到图库
-     * */
-    public  void saveImageToGallery(Context context) {
+     */
+    public void saveImageToGallery(Context context) {
+        String fileName = System.currentTimeMillis() + ".jpg";
         // 其次把文件插入到系统图库
         try {
-            MediaStore.Images.Media.insertImage(context.getContentResolver(), file.getAbsolutePath(), "code", null);
+            MediaStore.Images.Media.insertImage(context.getContentResolver(), file.getAbsolutePath(), fileName, null);
             // 最后通知图库更新
             context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + file)));
+            Toast.makeText(MainActivity.this, "成功保存到相册", Toast.LENGTH_LONG).show();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
     }
-    public void goIntent(){
-        Uri uri = Uri.parse(result.toString());
-        Intent intent = new Intent(Intent.ACTION_VIEW,uri);
+
+    public void copyWebsite() {
+        ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        // 将文本内容放到系统剪贴板里。
+        if (isQR) {
+            cm.setText(result.toString().trim());
+        } else {
+            cm.setText(url);
+        }
+        Toast.makeText(MainActivity.this, "复制成功", Toast.LENGTH_LONG).show();
+    }
+
+    public void goIntent() {
+        Uri uri = Uri.parse(result.toString() + "?debug=01");
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         startActivity(intent);
     }
+
 
 }

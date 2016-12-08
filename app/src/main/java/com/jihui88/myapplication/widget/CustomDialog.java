@@ -21,7 +21,7 @@ public abstract class CustomDialog extends Dialog {
      * @param context 上下文
      */
     public CustomDialog(Context context) {
-        super(context, R.style.ReadImgDialog);
+        super(context, R.style.CustomDialog);
         this.context = context;
         setContentView(R.layout.custom_dialog);
         createDialog();

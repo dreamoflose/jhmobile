@@ -5,9 +5,11 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.view.View;
 import android.view.View.OnLongClickListener;
-import android.webkit.*;
+import android.webkit.WebSettings;
 import android.webkit.WebSettings.RenderPriority;
 import android.webkit.WebSettings.ZoomDensity;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import com.jihui88.myapplication.R;
 
 /**
@@ -29,7 +31,6 @@ public class CustomWebView extends WebView implements OnLongClickListener{
 
 	private void initSettings() {
 		// 初始化设置
-        //WebView mWebView = (WebView) findViewById(R.id.webview);
 		WebSettings mSettings = this.getSettings();
 		mSettings.setJavaScriptEnabled(true);//开启javascript
 		mSettings.setDomStorageEnabled(true);//开启DOM
