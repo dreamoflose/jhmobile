@@ -54,7 +54,7 @@ public class CustomWebView extends WebView implements OnLongClickListener{
 	public boolean onLongClick(View v) {
 		// 长按事件监听（注意：需要实现LongClickCallBack接口并传入对象）
 		final HitTestResult htr = getHitTestResult();//获取所点击的内容
-		if (htr.getType() == HitTestResult.IMAGE_TYPE) {//判断被点击的类型为图片
+		if (htr.getType() == HitTestResult.IMAGE_TYPE || htr.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {//判断被点击的类型为图片
 			mCallBack.onLongClickCallBack(htr.getExtra());
 		}
 		return false;

@@ -3,44 +3,45 @@ package com.jihui88.myapplication;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.*;
 import android.content.ClipboardManager;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Bitmap.CompressFormat;
 import android.net.Uri;
-import android.os.Bundle;
-import android.util.Log;
-import android.os.AsyncTask;
-import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
+import android.os.*;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
+import android.webkit.JsResult;
+import android.webkit.WebChromeClient;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.webkit.*;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
-
-
 import com.google.zxing.Result;
 import com.jihui88.myapplication.widget.CustomDialog;
 import com.jihui88.myapplication.widget.CustomWebView;
 import com.jihui88.myapplication.widget.CustomWebView.LongClickCallBack;
-import com.jihui88.myapplication.wxapi.WXShareActivity;
 import com.jihui88.myapplication.zxing.DecodeImage;
+import com.tencent.mm.sdk.modelmsg.SendMessageToWX;
+import com.tencent.mm.sdk.modelmsg.WXMediaMessage;
+import com.tencent.mm.sdk.modelmsg.WXWebpageObject;
 import com.tencent.mm.sdk.openapi.IWXAPI;
 import com.tencent.mm.sdk.openapi.WXAPIFactory;
+import com.tencent.mm.sdk.platformtools.Util;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -57,13 +58,16 @@ public class MainActivity extends Activity implements LongClickCallBack {
     private static final String APP_ID = "wxd939360915065e46";
     private IWXAPI api;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initWebView();
         regToWx();
+
+        //android3.0以上凡是涉及到网络，下载等耗时操作，都不能在主线程中运行，加上以下代码，可以取消严格限制
+        StrictMode.ThreadPolicy policy=new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
     }
 
     private void initWebView() {
@@ -130,7 +134,7 @@ public class MainActivity extends Activity implements LongClickCallBack {
                 return true;
             }
         });
-        mCustomWebView.loadUrl("http://m1.jihui88.com/");// 设置域名
+        mCustomWebView.loadUrl("http://app.jihui88.com/");// 设置域名
         mCustomWebView.setFocusable(true);
         mCustomWebView.setFocusableInTouchMode(true);
         LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
@@ -155,7 +159,7 @@ public class MainActivity extends Activity implements LongClickCallBack {
                 Toast.makeText(MainActivity.this, "再按一次退出", Toast.LENGTH_SHORT).show();
                 startTime = currentTime;
             } else {
-                finish();//退出APP
+                finish();//退出APP 当前Activity
             }
         }
     }
@@ -250,14 +254,22 @@ public class MainActivity extends Activity implements LongClickCallBack {
                                 closeDialog();
                                 break;
                             case 1:
-                                saveImageToGallery(MainActivity.this);
+                                wechatShare(0);
                                 closeDialog();
                                 break;
                             case 2:
-                                copyWebsite();
+                                wechatShare(1);
                                 closeDialog();
                                 break;
                             case 3:
+                                saveImageToGallery(MainActivity.this);
+                                closeDialog();
+                                break;
+                            case 4:
+                                copyWebsite();
+                                closeDialog();
+                                break;
+                            case 5:
                                 goIntent();
                                 closeDialog();
                                 break;
@@ -275,8 +287,10 @@ public class MainActivity extends Activity implements LongClickCallBack {
     private void initAdapter() {
         adapter = new ArrayAdapter<String>(this, R.layout.item_dialog);
         adapter.add("发送给朋友");
+        adapter.add("分享到微信好友");
+        adapter.add("分享到微信朋友圈");
         adapter.add("保存到手机");
-        adapter.add("复制地址");
+        //adapter.add("复制地址");
     }
 
     /**
@@ -300,17 +314,108 @@ public class MainActivity extends Activity implements LongClickCallBack {
      * 发送给好友
      */
     private void sendToFriends() {
-
         Intent intent = new Intent(Intent.ACTION_SEND);
         Uri imageUri = Uri.parse(file.getAbsolutePath());
         intent.setType("image/*");
-        if (isQR) {//二维码地址
-            intent.putExtra(Intent.EXTRA_TEXT, result.toString().trim());
-        }
         intent.putExtra(Intent.EXTRA_STREAM, imageUri);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(Intent.createChooser(intent, getTitle()));
     }
+
+    /**
+     * 微信分享 （这里仅提供一个分享网页的示例，其它请参看官网示例代码）
+     * @param flag(0:分享到微信好友，1：分享到微信朋友圈)
+     */
+
+    private void wechatShare(int flag){
+        WXWebpageObject webpage = new WXWebpageObject();
+        WXMediaMessage msg = new WXMediaMessage(webpage);
+        if (isQR) {
+            webpage.webpageUrl = result.toString();//分享链接
+            if("".equals(getUrlParam("title"))){
+                msg.title = result.toString();//分享标题
+            }else{
+                msg.title = getUrlParam("title");
+                msg.description = result.toString();
+            }
+        } else {
+            webpage.webpageUrl = url;
+            msg.title = url;
+        }
+        // msg.description = context; // 分享内容
+        //Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ico); //这里替换一张自己工程里的图片资源 方法一
+        //msg.setThumbImage(bitmap);
+        ////利用HttpURLConnection对象,我们可以从网络中获取网页数据. 方法二
+        Bitmap bitmap = null;
+        URL urlImg = null;
+        try {
+            if("".equals(getUrlParam("pic"))){
+                urlImg = new URL(url);
+            }else{
+                urlImg = new URL(getUrlParam("pic"));
+            }
+            HttpURLConnection conn = (HttpURLConnection)urlImg.openConnection();
+            InputStream is = conn.getInputStream();
+            bitmap = BitmapFactory.decodeStream(is);
+            //bitmap = BitmapFactory.decodeStream((new URL(url).openStream()));
+        } catch (MalformedURLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+        bitmap=Bitmap.createScaledBitmap(bitmap, 120, 120, true);//设置缩略图大小
+        msg.thumbData = Util.bmpToByteArray(bitmap, true);
+
+        SendMessageToWX.Req req = new SendMessageToWX.Req();
+        req.transaction = buildTransaction("webpage");
+        req.message = msg;
+        req.scene = flag==0?SendMessageToWX.Req.WXSceneSession:SendMessageToWX.Req.WXSceneTimeline;
+        api.sendReq(req);
+    }
+    private String buildTransaction(final String type) {
+        return (type == null) ? String.valueOf(System.currentTimeMillis()) : type + System.currentTimeMillis();
+    }
+
+    private byte[] bmpToByteArray(final Bitmap bmp, final boolean needRecycle) {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        bmp.compress(CompressFormat.JPEG, 100, output);
+        if (needRecycle) {
+            bmp.recycle();
+        }
+        byte[] result = output.toByteArray();
+        try {
+            output.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+
+    /**
+     * 获取url 参数
+     *
+     */
+    public String getUrlParam(String name) {
+        String val ="" ;
+        if(url.indexOf("?") > -1){
+            String[] parm= url.split("\\?")[1].split("&");
+            for (int j = 0; j<parm.length; j++){
+                if(parm[j].split("=")[0].equals(name)){
+                    try {
+                        val = URLDecoder.decode(parm[j].split("=")[1], "utf-8");
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        return val;
+    }
+
+
+
 
     /**
      * bitmap 保存为jpg 图片
