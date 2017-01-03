@@ -30,6 +30,7 @@ import com.jihui88.myapplication.widget.CustomDialog;
 import com.jihui88.myapplication.widget.CustomWebView;
 import com.jihui88.myapplication.widget.CustomWebView.LongClickCallBack;
 import com.jihui88.myapplication.zxing.DecodeImage;
+import com.tencent.mm.sdk.modelmsg.SendAuth;
 import com.tencent.mm.sdk.modelmsg.SendMessageToWX;
 import com.tencent.mm.sdk.modelmsg.WXMediaMessage;
 import com.tencent.mm.sdk.modelmsg.WXWebpageObject;
@@ -76,8 +77,11 @@ public class MainActivity extends Activity implements LongClickCallBack {
         mCustomWebView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {  //点击链接
-                Log.d("", "shouldOverrideUrlLoading->" + url);
-                if (url.endsWith(".apk")) { //下载APK文件
+                Log.d("A链接", "shouldOverrideUrlLoading->" + url);
+                if (url.endsWith("WeChatLogin")){
+                    onWeChatLogin();
+                    return true;
+                } else if (url.endsWith(".apk")) { //下载APK文件
                     Uri uri = Uri.parse(url);
                     Intent viewIntent = new Intent(Intent.ACTION_VIEW, uri);
                     startActivity(viewIntent);
@@ -141,6 +145,7 @@ public class MainActivity extends Activity implements LongClickCallBack {
         addContentView(mCustomWebView, lp);
     }
 
+    //微信注册
     private void regToWx(){
         api = WXAPIFactory.createWXAPI(this,APP_ID,true);
         api.registerApp(APP_ID);
@@ -148,7 +153,6 @@ public class MainActivity extends Activity implements LongClickCallBack {
 
     // 连续点击两次Back键退出程序
     long startTime = 0;
-
     @Override
     public void onBackPressed() {
         if (mCustomWebView.canGoBack()) {//canGoBack来判断是否能回退网页
@@ -165,6 +169,16 @@ public class MainActivity extends Activity implements LongClickCallBack {
     }
 
 
+    // 微信登录
+    public void  onWeChatLogin() {
+        // send oauth request
+        SendAuth.Req req = new SendAuth.Req();
+        req.scope = "snsapi_userinfo";  //授权读取用户信息
+        req.state = "wechat_sdk_demo_test";  //自定义信息
+        api.sendReq(req);  //向微信发送请求
+    }
+
+    // 长按图片事件
     @Override
     public void onLongClickCallBack(final String imgUrl) {
         url = imgUrl;

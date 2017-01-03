@@ -17,6 +17,8 @@
         </activity>
         <!-- 主页 -->
         <activity android:name=".MainActivity"/>
+        <!-- 微信回调 -->
+        <activity android:exported="true" android:launchMode="singleTop" android:name=".wxapi.WXEntryActivity" android:theme="@android:style/Theme.NoDisplay" />
     </application>
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />

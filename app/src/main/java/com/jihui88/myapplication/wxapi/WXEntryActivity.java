@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import com.tencent.mm.sdk.modelbase.BaseReq;
 import com.tencent.mm.sdk.modelbase.BaseResp;
+import com.tencent.mm.sdk.modelmsg.SendAuth;
 import com.tencent.mm.sdk.openapi.IWXAPI;
 import com.tencent.mm.sdk.openapi.IWXAPIEventHandler;
 import com.tencent.mm.sdk.openapi.WXAPIFactory;
@@ -39,6 +40,13 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
             case BaseResp.ErrCode.ERR_AUTH_DENIED:
                 //分享拒绝
                 break;
+        }
+
+        if(resp instanceof SendAuth.Resp){
+            SendAuth.Resp newResp = (SendAuth.Resp) resp;
+
+            //获取微信传回的code
+            String code = newResp.code;
         }
     }
 }
