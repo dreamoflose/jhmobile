@@ -6,8 +6,8 @@
 ###项目目标: 建立企业自己的互联网销售平台
 ###项目网址: http://app.jihui88.com
 ###项目页面: 
-![登录页](http://dfwjjingtai.b0.upaiyun.com/upload//g//g2//ggggfj//picture//2017//02//27/df699ae5-03b1-42cf-9f99-c3f126614285.jpg)
-![主页](http://dfwjjingtai.b0.upaiyun.com/upload//g//g2//ggggfj//picture//2017//02//27/e1166047-17cd-4f6d-86c9-9bd7ecf2430a.jpg)![订单页](http://dfwjjingtai.b0.upaiyun.com/upload//g//g2//ggggfj//picture//2017//02//27/8989e1e6-9d45-4e02-921c-bec2189c4e41.jpg)
+![登录页](http://dfwjjingtai.b0.upaiyun.com/upload//g//g2//ggggfj//picture//2017//02//27/df699ae5-03b1-42cf-9f99-c3f126614285.jpg!160)
+![主页](http://dfwjjingtai.b0.upaiyun.com/upload//g//g2//ggggfj//picture//2017//02//27/e1166047-17cd-4f6d-86c9-9bd7ecf2430a.jpg!160)![订单页](http://dfwjjingtai.b0.upaiyun.com/upload//g//g2//ggggfj//picture//2017//02//27/8989e1e6-9d45-4e02-921c-bec2189c4e41.jpg!160)
 ##前端实现代码:
 基础框架:Angular.js
 上传组件:jquery.fileupload.js
