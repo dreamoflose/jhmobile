@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.JsResult;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -58,6 +59,12 @@ public class MainActivity extends Activity implements LongClickCallBack {
     //微信设置
     private static final String APP_ID = "wxd939360915065e46";
     private IWXAPI api;
+
+    // 图片设置
+    public final static int FILECHOOSER_RESULTCODE = 1;
+    public final static int FILECHOOSER_RESULTCODE_FOR_ANDROID_5 = 2;
+    public ValueCallback<Uri> mUploadMessage;
+    public ValueCallback<Uri[]> mUploadMessageForAndroid5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -137,12 +144,73 @@ public class MainActivity extends Activity implements LongClickCallBack {
                 b.create().show();
                 return true;
             }
+
+            //设置响应图片上传 openFileChooser()函数
+
+            public void openFileChooser(ValueCallback<Uri> uploadMsg) {
+                Log.d("try", "openFileChoose(ValueCallback<Uri> uploadMsg)");
+                mUploadMessage = uploadMsg;
+                Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+                i.addCategory(Intent.CATEGORY_OPENABLE);
+                i.setType("*/*");
+                MainActivity.this.startActivityForResult(Intent.createChooser(i, "File Chooser"), FILECHOOSER_RESULTCODE);
+            }
+            public void openFileChooser( ValueCallback uploadMsg, String acceptType ) {
+                Log.d("try", "openFileChoose( ValueCallback uploadMsg, String acceptType )");
+                mUploadMessage = uploadMsg;
+                Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+                i.addCategory(Intent.CATEGORY_OPENABLE);
+                i.setType("*/*");
+                MainActivity.this.startActivityForResult(
+                        Intent.createChooser(i, "File Browser"),
+                        FILECHOOSER_RESULTCODE);
+            }
+            // For Android > 5.0
+            public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType, String capture){
+                Log.d("try", "openFileChoose(ValueCallback<Uri> uploadMsg, String acceptType, String capture)");
+                mUploadMessage = uploadMsg;
+                Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+                i.addCategory(Intent.CATEGORY_OPENABLE);
+                i.setType("*/*");
+                MainActivity.this.startActivityForResult( Intent.createChooser( i, "File Browser" ), MainActivity.FILECHOOSER_RESULTCODE );
+            }
+
+
+
+
+
+
         });
         mCustomWebView.loadUrl("http://app.jihui88.com/");// 设置域名
         mCustomWebView.setFocusable(true);
         mCustomWebView.setFocusableInTouchMode(true);
         LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         addContentView(mCustomWebView, lp);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode,
+                                    Intent intent) {
+        if (requestCode == FILECHOOSER_RESULTCODE) {
+            if (null == mUploadMessage)
+                return;
+            Uri result = intent == null || resultCode != RESULT_OK ? null
+                    : intent.getData();
+            mUploadMessage.onReceiveValue(result);
+            mUploadMessage = null;
+
+        } else if (requestCode == FILECHOOSER_RESULTCODE_FOR_ANDROID_5) {
+            if (null == mUploadMessageForAndroid5)
+                return;
+            Uri result = (intent == null || resultCode != RESULT_OK) ? null
+                    : intent.getData();
+            if (result != null) {
+                mUploadMessageForAndroid5.onReceiveValue(new Uri[] { result });
+            } else {
+                mUploadMessageForAndroid5.onReceiveValue(new Uri[] {});
+            }
+            mUploadMessageForAndroid5 = null;
+        }
     }
 
     //微信注册
