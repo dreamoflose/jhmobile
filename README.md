@@ -2,10 +2,8 @@
 
 > 建立企业自己的互联网销售平台，是一个安卓平台的内嵌WebView页面。
 
-[在线地址](http://app.jihui88.com)
-
 <p align="center">
-  <a href="https://vue-hn.now.sh" target="_blank">
+  <a href="http://app.jihui88.com" target="_blank">
     <img src="http://app.jihui88.com/ico.png" width="240px">
     <br>
     Live Demo
