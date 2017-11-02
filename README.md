@@ -4,7 +4,13 @@
 
 [在线地址](http://app.jihui88.com)
 
-<center>![logo](http://m1.jihui88.com/ico.png)</center>
+<p align="center">
+  <a href="https://vue-hn.now.sh" target="_blank">
+    <img src="http://app.jihui88.com/ico.png" width="240px">
+    <br>
+    Live Demo
+  </a>
+</p>
 
 ### 技术栈
 - Intellij idea
