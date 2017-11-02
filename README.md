@@ -1,21 +1,18 @@
-# 机汇网项目名称: 全网营销
+# jhmobile-android 全网营销
 
-### 项目平台: Android
+> 建立企业自己的互联网销售平台，是一个安卓平台的内嵌WebView页面。
 
-### 项目logo: ![logo](http://m1.jihui88.com/ico.png)
+[在线地址](http://app.jihui88.com)
 
-### App下载地址: http://demo.ykit.net/wytx/jihui.apk
+<center>![logo](http://m1.jihui88.com/ico.png)</center>
 
-### 项目目标: 建立企业自己的互联网销售平台
+### 技术栈
+- Intellij idea
+- Android
+- Vue [jhmobile-web](https://github.com/weswu/jhmobile-web)
+- APK [下载地址](http://demo.ykit.net/wytx/jihui.apk)
 
-### 在线网址: http://app.jihui88.com
-
-### 项目页面: 
-
-<img src="http://dfwjjingtai.b0.upaiyun.com/upload//g//g2//ggggfj//picture//2017//02//27/df699ae5-03b1-42cf-9f99-c3f126614285.jpg" width="200"/>
-<img src="http://dfwjjingtai.b0.upaiyun.com/upload//g//g2//ggggfj//picture//2017//02//27/e1166047-17cd-4f6d-86c9-9bd7ecf2430a.jpg" width="200"/>
-<img src="http://dfwjjingtai.b0.upaiyun.com/upload//g//g2//ggggfj//picture//2017//02//27/8989e1e6-9d45-4e02-921c-bec2189c4e41.jpg" width="200"/>
-
-## 前端实现代码:
-VUE框架：[jhmobile-web](https://github.com/weswu/jhmobile-web)
-
+## 运行截图
+![登录](https://github.com/weswu/jhmobile-web/raw/master/screenshots/1.jpg)
+![首页](https://github.com/weswu/jhmobile-web/raw/master/screenshots/2.jpg)
+![详情](https://github.com/weswu/jhmobile-web/raw/master/screenshots/3.jpg)
